@@ -1,0 +1,38 @@
+networks:
+  main:
+
+services:
+  db:
+    image: mysql:8.0.33
+    volumes:
+      - ./data:/var/lib/mysql
+    networks:
+      - main
+    command:
+      [
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_unicode_ci",
+        "--default-authentication-plugin=mysql_native_password",
+      ]
+    env_file:
+      - .env
+
+  cache:
+    image: redis:7.0-alpine
+    networks:
+      - main
+
+  directus:
+    image: directus/directus:latest
+    restart: unless-stopped
+    ports:
+      - 8055:8055
+    volumes:
+      - ./uploads:/directus/uploads
+    networks:
+      - main
+    depends_on:
+      - db
+      - cache
+    env_file:
+      - .env
